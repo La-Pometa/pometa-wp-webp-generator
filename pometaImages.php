@@ -6,11 +6,11 @@
 	Description: Gestió Imatges Pometa
 	Version: 1.1
 	Requires at least: 5.6
-	Author: Jordi Fonfreda
-	Email: suport@lapometa.com
-	Author URI: http://www.lapometa.com/author/jordi-fonfreda
+	Author: La Pometa
+	Author URI: https://github.com/La-Pometa
+	GitHub Plugin URI: https://github.com/La-Pometa/wp-headless
+	License: GPL2
 	Text Domain: pometaimagesltd
-
 */
 
 
