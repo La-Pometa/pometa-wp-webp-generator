@@ -47,7 +47,7 @@ function content_render_thumbnail_source($object, $field_name, $request) {
 
 			foreach($the_sizes as $size_id => $size_info ) {
 				$data["sizes"][$size_id]["source_url"]=pometaimages_get_url($directory).basename(get_array_value($size_info,"file",""));
-				unset($data["sizes"][$size_id]["file"]);
+				//unset($data["sizes"][$size_id]["file"]);
 			}
 
 

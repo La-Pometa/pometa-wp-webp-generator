@@ -4,11 +4,12 @@
 	Plugin Name: Pometa Imatges
 	Plugin URI: http://www.lapometa.com/plugins/pometaimages
 	Description: Gestió Imatges Pometa
-	Version: 1.1
+	Version: 1.2
 	Requires at least: 5.6
 	Author: La Pometa
 	Author URI: https://github.com/La-Pometa
-	GitHub Plugin URI: https://github.com/La-Pometa/wp-headless
+    GitHub Plugin URI: La-Pometa/pometa-wp-webp-generator
+    Primary Branch: main
 	License: GPL2
 	Text Domain: pometaimagesltd
 */

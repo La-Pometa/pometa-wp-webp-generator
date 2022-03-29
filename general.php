@@ -21,7 +21,7 @@ add_filter("wp_get_attachment_metadata", 'pometaimages_wp_get_attachment_metadat
 
 
 add_shortcode('image', 'pometaimges_image_shortcode');
-add_filter('image_send_to_editor', 'pometaimages_custom_image_template', 1, 8);
+//add_filter('image_send_to_editor', 'pometaimages_custom_image_template', 1, 8);
 
 
 
@@ -370,11 +370,12 @@ function pometaimages_wp_get_attachment_metadata($data, $attachment_id, $from = 
             "width" => $width_full,
             "height" => $height_full,
             "file" => basename($file_main),
-            //"source_url"=>pometaimages_get_url(dirname($file_main)).basename($file_main),
+            "source_url"=>pometaimages_get_url(dirname($file_main)).basename($file_main),
             "mime-type" => $media_type_full
         );
         $nsizes["full_webp"] = $nsizes["full"];
-        // $nsizes["full_webp"]["source_url"]=$nsizes["full"]["source_url"].".webp";
+        $nsizes["full_webp"]["file"]=$nsizes["full"]["file"].".webp";
+        $nsizes["full_webp"]["source_url"]=$nsizes["full"]["source_url"].".webp";
         $nsizes["full_webp"]["mime-type"] = "image/webp";
     }
 
@@ -407,15 +408,26 @@ function pometaimages_wp_get_attachment_metadata($data, $attachment_id, $from = 
     $sizes = get_array_value($data, "sizes", array());
     $file_full = get_array_value($data, "file", "");
 
+    $file_full_basename = dirname($file_full);
+    if ( $file_full_basename == ".") {
+        $file_full = get_post_meta($attachment_id, '_wp_attached_file', true);
+    }
+
 
 
     if (is_array($sizes)) {
         foreach ($sizes as $size_id => $size_data) {
             $file = get_array_value($size_data, "file", "");
+
+            
+
             $sizes[$size_id]["source_url"] = pometaimages_get_url(dirname($file_full)) . $file;
             //unset($sizes[$size_id]["file"]);
         }
     }
+
+
+    $sizes = apply_filters("pometaimages/image/sizes",$sizes);
 
 
 
@@ -561,7 +573,7 @@ function pometaimages_get_image($attachment_id, $args = array())
         if (get_array_value($sizes_array, "full_webp", false) === false) {
             $sizes_array["full_webp"] = $sizes_array["full"];
             $sizes_array["full_webp"]["source_url"] = $sizes_array["full"]["source_url"] . ".webp";
-            $sizes_array["full_webp"]["mime-type"] = "image/webp";
+            $sizes_array["full_webp"]["mime-type"] = "image/webp2";
         }
 
         if (!$height) {

@@ -10,13 +10,14 @@ class pometaImagesSettings {
 
 
     var $thumbnail_sizes=false;
-
+    var $get_option_filter_active=false;
 
 	public function __construct() {
 		add_action( 'admin_menu', array( $this, 'pImages_add_plugin_page' ) );
 		add_action( 'admin_init', array( $this, 'pImages_page_init' ) );
 
-
+        add_filter('intermediate_image_sizes', array($this,'__intermediate_image_sizes'));
+        add_filter('get_option', array($this,'__intermediate_image_sizes'));
         $this->thumbnail_sizes=false;
 	}
 
@@ -29,7 +30,53 @@ class pometaImagesSettings {
 			array( $this, 'pImages_create_admin_page' ) // function
 		);
 	}
+    public function __intermediate_image_sizes($sizes) {
+        $newsizes=array();
+        $add_filter=true;
+        if ( $this->get_option_filter_active ) {
+            $add_filter = false;
+        }
 
+        $end = "_webp";
+        if ( is_array($sizes)) { 
+            foreach($sizes as $size_pos => $size_id) { 
+
+                $newsizes[] = $size_id;
+
+                if ( substr($size_id,strlen($size_id)-strlen($end),strlen($end)) == $end) {
+                    //Ja està 
+                    continue;
+                }
+
+                $webpsize = $size_id.$end;
+                if ( !isset($sizes[$webpsize])) {
+                    $newsizes[] = $webpsize;
+                    if ( $add_filter ) {
+                        add_filter("pre_option_".$webpsize."_size_w",array($this,"_filter_size"),30,3);
+                        add_filter("pre_option_".$webpsize."_size_h",array($this,"_filter_size"),30,3);
+                    }
+                }
+            }
+            $sizes=$newsizes;
+        }
+        $this->get_option_filter_active=true;
+
+        return $sizes;
+    }
+
+    public function _filter_size($pre,$option,$mixed) {
+        $option_info = explode("_",$option);
+        if ( in_array("webp",$option_info)) {
+            $param = get_array_value($option_info,count($option_info)-1,false);
+            $key = str_replace("_webp_","_",$option);
+            $newkey = $key;
+            $value = get_option($newkey);
+            return $value;
+
+        }
+
+        return $pre;
+    }
 	public function pImages_create_admin_page() {
 		    $this->pImages_options = get_option( 'pImages_settings' ); ?>
 			<style type="text/css">
@@ -178,6 +225,11 @@ class pometaImagesSettings {
         }
         return $this->thumbnail_sizes;
     }
+    public function get_size_enabled($size_id) {
+
+        $webp_state = get_array_value(get_array_value(get_array_value($this->pImages_options,"size",array()),$size_id,array()),"webp","off");
+
+    }
 
     public function formats_inici_callback() {
 
@@ -200,14 +252,21 @@ class pometaImagesSettings {
             <tbody>
         ';
         $n=0;
+        $end = "_webp";
+        
         foreach($thumbnail_sizes as $size_id => $size_data) {
             $n++;
+
+            if ( substr($size_id,strlen($size_id)-strlen($end),strlen($end)) == $end ) {
+                continue;
+            }
+
             $name = $size_id;
             $width = get_array_value($size_data,"width",0);
             $height = get_array_value($size_data,"height",0);
             $crop = get_array_value($size_data,"crop",false);
 
-            $webp_state = get_array_value(get_array_value(get_array_value($this->pImages_options,"size",array()),$size_id,array()),"webp","off");
+            $webp_state = $this->get_size_enabled($size_id);
             $webp = '<input type="checkbox" name="pImages_settings[size]['.$name.'][webp]" '.($webp_state=="on"?'checked="checked"':'').'>';
 
             echo '
@@ -256,6 +315,10 @@ function pImages_settings_get_option($option,$default=false) {
 function pImages_settings_get_periodo_date() {
 		return pImages_settings_get_option("data_final","");
 }
+
+
+
+
 
 
 function pImages_get_intermediate_sizes() {
